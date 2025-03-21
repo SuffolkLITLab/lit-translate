@@ -4,18 +4,34 @@ import openai
 from openai import OpenAI
 import re
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1"))
 import tempfile
 from markitdown import MarkItDown
 md = MarkItDown()
 
+st.set_page_config(
+    page_icon="img/favicon.ico",
+    page_title="LLM Text Translator by Suffolk LIT Lab",
+)
 
-# Configure OpenAI using environment variables
-# TODO: The 'openai.api_base' option isn't read in the client API. You will need to pass it when you instantiate the client, e.g. 'OpenAI(base_url=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1"))'
-# openai.api_base = os.getenv("OPENAI_API_URL", "https://api.openai.com/v1")
+LOGO = "img/lit-lab-logo-large.svg"
+LOGO_ICON_IMAGE = "img/lit-favicon.svg"
+
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-st.title("AI Text Translator")
+st.logo(LOGO, size="large", icon_image=LOGO_ICON_IMAGE)
+st.image(LOGO, use_container_width=True)
+st.title("LLM Text Translator")
+st.markdown("This AI-powered translator can convert text from one language to another.")
+st.markdown("""Before you use this tool:
+            
+1. Redact sensitive or confidential information, like names of real people.
+2. Always have a human translator review the output to ensure accuracy.
+            
+This tool uses the [OpenAI enterprise privacy policy](https://openai.com/enterprise-privacy/), which is appropriate for most sensitive uses. Data is never used for training purposes and you retain all rights.
+""")
+st.markdown("**AI-powered translation can make serious mistakes,** especially in translation of legal concepts, and should only be relied upon for a draft translation.")
+
 st.write("Upload any file or paste text below, then choose a target language to translate the text.")
 
 # Initialize input_text variable
@@ -76,3 +92,5 @@ if st.button("Translate"):
             st.markdown(translated_text, unsafe_allow_html=True)
         except Exception as e:
             st.error(f"An error occurred: {e}")
+
+st.markdown("Built with ❤️ by [Suffolk Legal Innovation and Technology Lab](https://suffolklitlab.org)")
