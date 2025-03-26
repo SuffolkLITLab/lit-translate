@@ -3,16 +3,19 @@ import streamlit as st
 import openai
 from openai import OpenAI
 import re
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1"))
-import tempfile
-from markitdown import MarkItDown
-md = MarkItDown()
+from streamlit_cookies_controller import CookieController
 
 st.set_page_config(
     page_icon="img/favicon.ico",
     page_title="LLM Text Translator by Suffolk LIT Lab",
 )
+
+
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_URL", "https://api.openai.com/v1"))
+import tempfile
+from markitdown import MarkItDown
+md = MarkItDown()
 
 LOGO = "img/lit-lab-logo-large.svg"
 LOGO_ICON_IMAGE = "img/lit-favicon.svg"
@@ -55,18 +58,53 @@ if uploaded_file is not None:
 else:
     input_text = st.text_area("Or paste your text here:")
 
+# Retrieve previously selected language from cookies; default to "Spanish" if not set
+
+cookie_controller = CookieController()
+
+default_language = cookie_controller.get("selected_language") or "Spanish"
+
 languages = [
-    "Spanish", "Portuguese", "Chinese (Mandarin)", "Chinese (Cantonese)",
-    "French", "Haitian Creole", "Vietnamese", "Khmer", "Arabic", "Russian", "Bengali",
-    "Korean", "Tagalog", "Hindi", "Urdu", "Persian", "Italian", "Polish", "German", "Japanese", "Somali"
+    "Spanish",
+    "English",
+    "Arabic",
+    "Bengali",
+    "Chinese (Cantonese)",
+    "Chinese (Mandarin)",
+    "French",
+    "German",
+    "Haitian Creole",
+    "Hindi",
+    "Italian",
+    "Polish",
+    "Japanese",
+    "Khmer",
+    "Korean",
+    "Persian",
+    "Portuguese",
+    "Russian",
+    "Somali",
+    "Tagalog",
+    "Urdu",
+    "Vietnamese",
 ]
 
 # Create a combobox-like widget by offering a selectbox with a custom option
 options = languages + ["Other (Custom)"]
-selected_language = st.selectbox("Select target language", options)
+
+if default_language in options:
+    default_index = options.index(default_language)
+else:
+    default_index = len(options) - 1  # Default to "Other (Custom)" if not in the list
+
+selected_language = st.selectbox("Select target language", options, index=default_index)
 
 if selected_language == "Other (Custom)":
-    selected_language = st.text_input("Enter custom target language", value="")
+    default_custom = default_language if default_language not in languages else ""
+    selected_language = st.text_input("Enter custom target language", value=default_custom).strip()
+# Save the selected language back to the cookie for future sessions.
+
+cookie_controller.set("selected_language", selected_language)
 
 # Translation process
 if st.button("Translate"):
